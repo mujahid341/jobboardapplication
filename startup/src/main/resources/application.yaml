@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+logging:
+  level:
+    root: INFO
+    com.example.service: DEBUG
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jobboarddb
+    username: postgres           # replace if you use a different user
+    password: admin  # replace with your actual password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
