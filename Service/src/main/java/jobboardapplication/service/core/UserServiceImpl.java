@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
         User user = createUser(request);
 
         userRepository.save(user); // This operation will now be part of the transaction
-        logger.debug("User registered successfully: {}", user.toString());
+        logger.debug("User registered successfully: {}", user.getEmail());
     }
 
     private static User createUser(RegisterRequest request) {
