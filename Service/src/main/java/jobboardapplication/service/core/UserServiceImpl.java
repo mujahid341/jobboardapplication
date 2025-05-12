@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     public void register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             logger.error("Email already registered: {}", request.getEmail());
-            throw new RuntimeException("Email already registered");
+            throw new RuntimeException("new Email already registered");
         }
 
         User user = createUser(request);
