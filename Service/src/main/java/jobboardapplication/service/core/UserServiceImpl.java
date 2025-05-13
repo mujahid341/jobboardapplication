@@ -24,18 +24,17 @@ public class UserServiceImpl implements UserService {
     public void register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             logger.error("Email already registered: {}", request.getEmail());
-            throw new RuntimeException("new Email already registered");
+            throw new RuntimeException("Email already registered");
         }
 
         User user = createUser(request);
 
         userRepository.save(user); // This operation will now be part of the transaction
-        logger.debug("User registered successfully: {}", user.getEmail());
+        logger.error("User registered successfully: {}", user.getEmail());
     }
 
-    private static User createUser(RegisterRequest request) {
+    private User createUser(RegisterRequest request) {
         User user = new User();
-        // Do not set the ID manually, let JPA handle it.
         user.setId(UUID.randomUUID().toString());
         user.setName(request.getName());
         user.setEmail(request.getEmail());
