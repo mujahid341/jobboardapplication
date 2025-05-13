@@ -1,8 +1,6 @@
 package jobboardapplication.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table (name = "jobs")
@@ -14,18 +12,20 @@ public class Job {
     private String description;
     private String skill;
 
-    private User user;
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     public Job() {
     }
 
-    public Job(String id, String title, String description, String skill, String location, User user) {
+    public Job(String id, String title, String description, String skill, String location, User createdBy) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.skill = skill;
         this.location = location;
-        this.user = user;
+        this.createdBy = createdBy;
     }
 
     // Getters and setters
@@ -69,12 +69,12 @@ public class Job {
         this.location = location;
     }
 
-    public User getUser() {
-        return user;
+    public User getCreatedBy() {
+        return createdBy;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 
     @Override
@@ -85,7 +85,7 @@ public class Job {
                 ", location='" + location + '\'' +
                 ", description='" + description + '\'' +
                 ", skill='" + skill + '\'' +
-                ", user=" + user +
+                ", user=" + createdBy +
                 '}';
     }
 }
