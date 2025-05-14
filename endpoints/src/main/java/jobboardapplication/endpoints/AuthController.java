@@ -1,5 +1,6 @@
 package jobboardapplication.endpoints;
 
+import jobboardapplication.domain.UserRegisterResponse;
 import jobboardapplication.service.api.UserService;
 import jobboardapplication.domain.RegisterRequest;
 import org.slf4j.Logger;
@@ -30,8 +31,9 @@ public class AuthController {
             if (request.getRole() == null) {
                 return ResponseEntity.badRequest().body("Role is required");
             }
-            userService.register(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+            UserRegisterResponse userRegisterResponse = userService.register(request);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(userRegisterResponse);
         } catch (Exception e) {
             logger.error("Error during registration: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
