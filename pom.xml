@@ -27,6 +27,7 @@
 		<module>Service</module>
 		<module>domain</module>
 		<module>repository</module>
+		<module>common</module>
 	</modules>
 	<scm>
 		<connection/>

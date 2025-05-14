@@ -7,14 +7,19 @@ public class JobResponse {
     private String description;
     private String skill;
 
-    public JobResponse(String id, String title, String location, String description, String skill) {
-        this.id = id;
-        this.title = title;
-        this.location = location;
-        this.description = description;
-        this.skill = skill;
+    public JobResponse() {
+        // No-args constructor required for serialization
     }
 
+    public JobResponse(Job job) {
+        this.id = job.getId();
+        this.title = job.getTitle();
+        this.location = job.getLocation();
+        this.description = job.getDescription();
+        this.skill = job.getSkill(); // FIXED: should fetch skill, not description
+    }
+
+    // Getters
     public String getId() {
         return id;
     }

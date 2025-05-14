@@ -5,6 +5,7 @@ import jobboardapplication.repository.UserRepository;
 import jobboardapplication.service.api.UserService;
 import jobboardapplication.domain.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional // Adding @Transactional here ensures that the method runs within a transaction
@@ -38,7 +41,8 @@ public class UserServiceImpl implements UserService {
         user.setId(UUID.randomUUID().toString());
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        logger.error("Encoded password: {}", user.getPassword());
         user.setRole(request.getRole());
         return user;
     }
