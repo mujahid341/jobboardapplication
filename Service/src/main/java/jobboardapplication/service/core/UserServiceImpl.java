@@ -1,6 +1,7 @@
 package jobboardapplication.service.core;
 
 import jobboardapplication.domain.User;
+import jobboardapplication.domain.UserRegisterResponse;
 import jobboardapplication.repository.UserRepository;
 import jobboardapplication.service.api.UserService;
 import jobboardapplication.domain.RegisterRequest;
@@ -24,7 +25,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional // Adding @Transactional here ensures that the method runs within a transaction
-    public void register(RegisterRequest request) {
+    public UserRegisterResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             logger.error("Email already registered: {}", request.getEmail());
             throw new RuntimeException("Email already registered");
@@ -32,8 +33,11 @@ public class UserServiceImpl implements UserService {
 
         User user = createUser(request);
 
-        userRepository.save(user); // This operation will now be part of the transaction
-        logger.error("User registered successfully: {}", user.getEmail());
+        User savedUser = userRepository.save(user);// This operation will now be part of the transaction
+
+        logger.error("User registered successfully: {}", savedUser);
+        return new UserRegisterResponse(savedUser.getId(), savedUser.getName(), savedUser.getEmail(), savedUser.getRole());
+
     }
 
     private User createUser(RegisterRequest request) {

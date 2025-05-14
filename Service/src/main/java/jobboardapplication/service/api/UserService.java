@@ -1,7 +1,8 @@
 package jobboardapplication.service.api;
 
 import jobboardapplication.domain.RegisterRequest;
+import jobboardapplication.domain.UserRegisterResponse;
 
 public interface UserService {
-    void register(RegisterRequest request);
+    UserRegisterResponse register(RegisterRequest request);
 }
