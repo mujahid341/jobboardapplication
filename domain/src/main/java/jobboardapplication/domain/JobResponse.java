@@ -39,4 +39,15 @@ public class JobResponse {
     public String getSkill() {
         return skill;
     }
+
+    @Override
+    public String toString() {
+        return "JobResponse{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", location='" + location + '\'' +
+                ", description='" + description + '\'' +
+                ", skill='" + skill + '\'' +
+                '}';
+    }
 }
