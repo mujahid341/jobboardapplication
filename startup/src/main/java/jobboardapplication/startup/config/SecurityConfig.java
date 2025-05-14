@@ -1,35 +1,49 @@
 package jobboardapplication.startup.config;
 
+import jobboardapplication.service.core.CustomUserDetailService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.*;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Define the SecurityFilterChain bean to configure security settings
+    @Autowired
+    private CustomUserDetailService customUserDetailsService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()  // disable CSRF for testing with Postman
-                .cors().and()
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/jobboard/auth/**").permitAll()  // ✅ Correctly match your path
-                        .anyRequest().authenticated())
-                .formLogin(withDefaults());
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/jobboard/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/jobboard/job/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/jobboard/job/**").hasRole("EMPLOYER")
+                        .anyRequest().authenticated()
+                )
+                .httpBasic(Customizer.withDefaults())  // ✅ Use lambda-based DSL
+                .csrf(AbstractHttpConfigurer::disable)          // ✅ New way to disable CSRF
+                .formLogin(AbstractHttpConfigurer::disable);    // ✅ New way to disable form login
 
         return http.build();
     }
 
-    // Define a PasswordEncoder bean for securely encoding passwords
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();  // Use BCrypt to hash passwords
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }
