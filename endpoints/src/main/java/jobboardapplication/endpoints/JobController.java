@@ -1,8 +1,6 @@
 package jobboardapplication.endpoints;
 
-import jobboardapplication.domain.CreateJobRequest;
-import jobboardapplication.domain.JobResponse;
-import jobboardapplication.domain.User;
+import jobboardapplication.domain.*;
 import jobboardapplication.repository.UserRepository;
 import jobboardapplication.service.api.JobService;
 import org.slf4j.Logger;
@@ -13,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/jobboard/job")
@@ -29,12 +29,7 @@ public class JobController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createJob(@RequestBody CreateJobRequest request, Authentication auth) {
         try {
-            // Fetch the logged-in user from the repository based on the authentication object
-            User user = userRepository.findByEmail(auth.getName())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            // Create the job via service
-            JobResponse jobResponse = jobService.create(request, user);
+            JobResponse jobResponse = jobService.create(request, auth);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(jobResponse);
         } catch (RuntimeException e) {
@@ -45,6 +40,51 @@ public class JobController {
         }
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<Object> listMyJobs(Authentication auth) {
+        try {
+            List<JobResponse> jobs = jobService.listByEmployer(auth);
+
+            logger.error(jobs.toString());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(jobs);
+        } catch (Exception e) {
+            logger.error("Error in fetching jobs: {}", e.getMessage(), e);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Failed to fetch jobs: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{jobId}")
+    public ResponseEntity<?> updateJob(@PathVariable String jobId, @RequestBody UpdateJobRequest request, Authentication auth) {
+
+        try {
+
+            JobResponse jobResponse = jobService.update(jobId, request, auth);
+            logger.error("Job updated successfully: {}", jobResponse);
+            return ResponseEntity.ok(jobResponse);
+
+        } catch (RuntimeException e) {
+            logger.error("Error in job update: {}", e.getMessage(), e);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Failed to update job: " + e.getMessage()));
+        }
+    }
+    @DeleteMapping("/{jobId}")
+    public ResponseEntity<?> deleteJob(@PathVariable String jobId, Authentication auth) {
+
+        try {
+           JobResponse deletedJob = jobService.delete(jobId, auth);
+            return ResponseEntity.ok(deletedJob);
+        } catch (RuntimeException e) {
+            logger.error("Error in job deletion: {}", e.getMessage(), e);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Failed to delete job: " + e.getMessage()));
+        }
+    }
     // Optional: Structured error response class
     private record ErrorResponse(String message) {}
 }

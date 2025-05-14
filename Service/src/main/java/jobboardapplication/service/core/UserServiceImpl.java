@@ -37,7 +37,6 @@ public class UserServiceImpl implements UserService {
 
         logger.error("User registered successfully: {}", savedUser);
         return new UserRegisterResponse(savedUser.getId(), savedUser.getName(), savedUser.getEmail(), savedUser.getRole());
-
     }
 
     private User createUser(RegisterRequest request) {
