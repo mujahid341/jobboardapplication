@@ -16,27 +16,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/jobboard/auth")
 public class AuthController {
-   private Logger logger = LoggerFactory.getLogger(AuthController.class);
-    @Autowired
-   private UserService userService;
+    private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        try {
-            // Validate the request
-            if (request.getName() == null || request.getEmail() == null || request.getPassword() == null) {
-                return ResponseEntity.badRequest().body("Name, email, and password are required");
-            }
-            if (request.getRole() == null) {
-                return ResponseEntity.badRequest().body("Role is required");
-            }
-            UserRegisterResponse userRegisterResponse = userService.register(request);
+    public ResponseEntity<Object> register(@RequestBody RegisterRequest request) {
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(userRegisterResponse);
-        } catch (Exception e) {
-            logger.error("Error during registration: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-        }
+        UserRegisterResponse userRegisterResponse = userService.register(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(userRegisterResponse);
     }
 }
