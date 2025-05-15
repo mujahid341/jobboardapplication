@@ -28,7 +28,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/jobboard/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/jobboard/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/jobboard/job/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/jobboard/job/my").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.POST, "/jobboard/job/**").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.PUT, "/jobboard/job/**").hasRole("EMPLOYER")

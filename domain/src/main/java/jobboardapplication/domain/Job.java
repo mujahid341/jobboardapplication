@@ -2,6 +2,8 @@ package jobboardapplication.domain;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
 @Table (name = "jobs")
 public class Job {
@@ -75,6 +77,18 @@ public class Job {
 
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Job job = (Job) o;
+        return Objects.equals(id, job.id) && Objects.equals(title, job.title) && Objects.equals(location, job.location) && Objects.equals(description, job.description) && Objects.equals(skill, job.skill) && Objects.equals(createdBy, job.createdBy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, location, description, skill, createdBy);
     }
 
     @Override
