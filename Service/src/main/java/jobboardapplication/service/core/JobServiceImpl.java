@@ -45,7 +45,6 @@ public class JobServiceImpl implements JobService {
         job.setCreatedBy(user);
 
         try {
-
             jobRepository.save(job);
             logger.info("Job saved successfully: {}", job);
         } catch (Exception e) {
@@ -85,12 +84,25 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public JobResponse delete(String jobId, Authentication auth) {
-
         Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
 
-       JobResponse deletedJob = new JobResponse(job);
+        JobResponse deletedJob = new JobResponse(job);
         jobRepository.delete(job);
         logger.info("Job deleted successfully: {}", job);
         return deletedJob;
+    }
+
+    @Override
+    public List<JobResponse> search(String location, String skills, String keyword) {
+        return jobRepository.searchJobs(location, skills, keyword)
+                .stream()
+                .map(JobResponse::new)
+                .toList();
+    }
+
+    @Override
+    public JobResponse getById(String jobId) {
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        return new JobResponse(job);
     }
 }
