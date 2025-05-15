@@ -5,10 +5,11 @@ import jobboardapplication.domain.*;
 import jobboardapplication.repository.JobRepository;
 import jobboardapplication.repository.UserRepository;
 import jobboardapplication.service.api.JobService;
-import jobboardapplication.service.exceptions.UserNotFoundException;
+import jobboardapplication.service.exceptions.ApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -30,11 +31,11 @@ public class JobServiceImpl implements JobService {
     public JobResponse create(CreateJobRequest request, Authentication auth) {
 
         if (request.getTitle() == null || request.getLocation() == null || request.getDescription() == null) {
-            throw new RuntimeException("Title, location, and description are required");
+            throw new ApiException("Title, location, and description are required", HttpStatus.BAD_REQUEST.value());
         }
 
         User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND.value()));
 
         Job job = new Job();
         job.setId(UUID.randomUUID().toString());
@@ -49,7 +50,7 @@ public class JobServiceImpl implements JobService {
             logger.info("Job saved successfully: {}", job);
         } catch (Exception e) {
             logger.error("Error creating job: {}", e.getMessage(), e);
-            throw new RuntimeException("Error saving the job");
+            throw new ApiException("Error saving the job", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
 
         return new JobResponse(job);
@@ -58,7 +59,7 @@ public class JobServiceImpl implements JobService {
     @Override
     public List<JobResponse> listByEmployer(Authentication auth) {
         User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND.value()));
 
         return jobRepository.findByCreatedBy(user).stream().map(JobResponse::new).toList();
     }
@@ -66,9 +67,9 @@ public class JobServiceImpl implements JobService {
     @Override
     public JobResponse update(String jobId, UpdateJobRequest request, Authentication auth) {
         User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND.value()));
 
-        Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new ApiException("Job not found", HttpStatus.NOT_FOUND.value()));
 
         job.setTitle(request.getTitle());
         job.setDescription(request.getDescription());
@@ -84,7 +85,7 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public JobResponse delete(String jobId, Authentication auth) {
-        Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new ApiException("Job not found", HttpStatus.NOT_FOUND.value()));
 
         JobResponse deletedJob = new JobResponse(job);
         jobRepository.delete(job);
@@ -102,7 +103,7 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public JobResponse getById(String jobId) {
-        Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new ApiException("Job not found", HttpStatus.NOT_FOUND.value()));
         return new JobResponse(job);
     }
 }
