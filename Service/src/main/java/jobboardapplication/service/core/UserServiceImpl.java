@@ -5,6 +5,7 @@ import jobboardapplication.domain.UserRegisterResponse;
 import jobboardapplication.repository.UserRepository;
 import jobboardapplication.service.api.UserService;
 import jobboardapplication.domain.RegisterRequest;
+import jobboardapplication.service.exceptions.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,18 +25,17 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    @Transactional // Adding @Transactional here ensures that the method runs within a transaction
+    @Transactional
     public UserRegisterResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             logger.error("Email already registered: {}", request.getEmail());
-            throw new RuntimeException("Email already registered");
+            throw new ApiException("Email already registered", 409);
         }
 
         User user = createUser(request);
+        User savedUser = userRepository.save(user);
 
-        User savedUser = userRepository.save(user);// This operation will now be part of the transaction
-
-        logger.error("User registered successfully: {}", savedUser);
+        logger.info("User registered successfully: {}", savedUser);
         return new UserRegisterResponse(savedUser.getId(), savedUser.getName(), savedUser.getEmail(), savedUser.getRole());
     }
 
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        logger.error("Encoded password: {}", user.getPassword());
+        logger.info("Encoded password: {}", user.getPassword());
         user.setRole(request.getRole());
         return user;
     }
