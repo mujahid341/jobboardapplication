@@ -32,10 +32,6 @@ public class UserServiceImpl implements UserService {
             throw new ApiException("Name, email, password and role are required", 400);
         }
 
-        String role = request.getRole().name();
-        if (!("EMPLOYER".equalsIgnoreCase(role) || "JOB_SEEKER".equalsIgnoreCase(role))) {
-            throw new ApiException("Role must be either EMPLOYER or JOB_SEEKER", 400);
-        }
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             logger.error("Email already registered: {}", request.getEmail());
             throw new ApiException("Email already registered", 409);

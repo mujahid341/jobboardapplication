@@ -41,7 +41,6 @@ public class JobController {
     @PutMapping("/{jobId}")
     public ResponseEntity<Object> updateJob(@PathVariable String jobId, @RequestBody UpdateJobRequest request, Authentication auth) {
         JobResponse jobResponse = jobService.update(jobId, request, auth);
-        logger.info("Job updated successfully: {}", jobResponse);
         return ResponseEntity.ok(jobResponse);
     }
 
@@ -65,5 +64,5 @@ public class JobController {
         return ResponseEntity.ok(job);
     }
 
-    private record ErrorResponse(String message) {}
+   // private record ErrorResponse(String message) {}
 }

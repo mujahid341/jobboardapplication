@@ -1,11 +1,6 @@
 package jobboardapplication.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version; // Import for versioning
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
@@ -13,13 +8,15 @@ import java.util.Objects;
 @Table(name = "users")
 public class User {
     @Id
-    private String id; // Change the id type to Long to match auto-generated value type
+    private String id;
 
     private String name;
     private String email;
     private String password;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
+
 
 
     public User() {

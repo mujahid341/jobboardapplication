@@ -34,8 +34,7 @@ public class JobServiceImpl implements JobService {
             throw new ApiException("Title, location, and description are required", HttpStatus.BAD_REQUEST.value());
         }
 
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND.value()));
+        User user = (User) auth.getPrincipal();
 
         Job job = new Job();
         job.setId(UUID.randomUUID().toString());
@@ -58,16 +57,13 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public List<JobResponse> listByEmployer(Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND.value()));
-
+        User user = (User) auth.getPrincipal();
         return jobRepository.findByCreatedBy(user).stream().map(JobResponse::new).toList();
     }
 
     @Override
     public JobResponse update(String jobId, UpdateJobRequest request, Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND.value()));
+        User user = (User) auth.getPrincipal();
 
         Job job = jobRepository.findById(jobId).orElseThrow(() -> new ApiException("Job not found", HttpStatus.NOT_FOUND.value()));
 
