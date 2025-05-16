@@ -8,7 +8,6 @@ import jobboardapplication.common.security.JWTUtil;
 import jobboardapplication.domain.User;
 import jobboardapplication.repository.UserRepository;
 import jobboardapplication.service.exceptions.ApiException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
