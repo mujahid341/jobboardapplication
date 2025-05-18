@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
@@ -37,24 +38,31 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
-
             String token = header.substring(7);
 
             if (jwtUtil.isValid(token)) {
                 String email = jwtUtil.extractEmail(token);
-                logger.error("Extracted Email: " + email);
-                User user = userRepository.findByEmail(email).orElseThrow(() -> new ApiException("User not found for email : "+email, HttpStatus.NOT_FOUND.value()));
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new ApiException("User not found for email: " + email, HttpStatus.NOT_FOUND.value()));
 
                 if (user != null) {
+                    // ✅ Inject role properly as ROLE_EMPLOYER
+                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+
                     UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                    user, null,
-                                    List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-                            );
+                            new UsernamePasswordAuthenticationToken(user, null, authorities);
+
                     SecurityContextHolder.getContext().setAuthentication(auth);
+
+                    // ✅ Debug logs for clarity
+                    System.out.println("✅ Authenticated Email: " + email);
+                    System.out.println("✅ Authorities: " + authorities);
+                    System.out.println("✅ URI: " + request.getRequestURI());
+                    System.out.println("✅ HTTP Method: " + request.getMethod());
                 }
             }
         }
+
         chain.doFilter(request, response);
     }
 }

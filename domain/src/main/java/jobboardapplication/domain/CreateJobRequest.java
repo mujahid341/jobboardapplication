@@ -6,6 +6,9 @@ public class CreateJobRequest {
     private String description;
     private String skills;
 
+    public CreateJobRequest() {
+        // Default constructor needed for Jackson deserialization
+    }
     public CreateJobRequest(String title, String location, String description, String skills) {
         this.title = title;
         this.location = location;
