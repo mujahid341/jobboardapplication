@@ -1,14 +1,17 @@
 package jobboardapplication.domain;
 
 import jakarta.persistence.*;
+import jobboardapplication.domain.model.BaseEntity;
 
 import java.util.Objects;
 
 @Entity
-@Table (name = "jobs")
-public class Job {
+@Table(name = "jobs")
+public class Job extends BaseEntity {
+
     @Id
     private String id;
+
     private String title;
     private String location;
     private String description;
@@ -83,7 +86,12 @@ public class Job {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Job job = (Job) o;
-        return Objects.equals(id, job.id) && Objects.equals(title, job.title) && Objects.equals(location, job.location) && Objects.equals(description, job.description) && Objects.equals(skill, job.skill) && Objects.equals(createdBy, job.createdBy);
+        return Objects.equals(id, job.id)
+                && Objects.equals(title, job.title)
+                && Objects.equals(location, job.location)
+                && Objects.equals(description, job.description)
+                && Objects.equals(skill, job.skill)
+                && Objects.equals(createdBy, job.createdBy);
     }
 
     @Override
@@ -99,7 +107,7 @@ public class Job {
                 ", location='" + location + '\'' +
                 ", description='" + description + '\'' +
                 ", skill='" + skill + '\'' +
-                ", user=" + createdBy +
+                ", createdBy=" + createdBy +
                 '}';
     }
 }

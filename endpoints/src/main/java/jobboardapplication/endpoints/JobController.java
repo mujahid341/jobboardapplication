@@ -6,6 +6,7 @@ import jobboardapplication.service.api.JobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,11 +52,13 @@ public class JobController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Object> searchJobs(@RequestParam(required = false) String location,
-                                             @RequestParam(required = false) String skills,
-                                             @RequestParam(required = false) String keyword) {
-        List<JobResponse> jobs = jobService.search(location, skills, keyword);
-        return ResponseEntity.ok(jobs);
+    public ResponseEntity<Page<JobResponse>> searchJobs(
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String skills,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(jobService.search(location, skills, keyword, page, size));
     }
 
     @GetMapping("/{jobId}")
@@ -63,6 +66,4 @@ public class JobController {
         JobResponse job = jobService.getById(jobId);
         return ResponseEntity.ok(job);
     }
-
-   // private record ErrorResponse(String message) {}
 }

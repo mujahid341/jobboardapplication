@@ -9,6 +9,14 @@ public class LoginRequest {
     private String email;
     @NotBlank private String password;
 
+    public LoginRequest() {
+        // Default constructor needed for Jackson deserialization
+    }
+    public LoginRequest(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
     public String getEmail() {
         return email;
     }
