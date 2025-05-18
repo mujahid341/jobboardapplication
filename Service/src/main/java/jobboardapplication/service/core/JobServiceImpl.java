@@ -92,7 +92,7 @@ public class JobServiceImpl implements JobService {
 
         JobResponse deletedJob = new JobResponse(job);
         jobRepository.delete(job);
-        logger.info("Job deleted successfully: {}", job);
+        logger.info("Job deleted successfully: {}", deletedJob);
 
         return deletedJob;
     }

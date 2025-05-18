@@ -41,12 +41,28 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+
+                        // 🔓 Swagger/OpenAPI access for developers
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
+
+                        // 👤 Public Auth API
                         .requestMatchers(HttpMethod.POST, "/jobboard/auth/**").permitAll()
+
+                        // 📄 Public Job Search API
                         .requestMatchers(HttpMethod.GET, "/jobboard/job/**").permitAll()
+
+                        // 🧑‍💼 Employer-only APIs
                         .requestMatchers(HttpMethod.GET, "/jobboard/job/my").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.POST, "/jobboard/job/**").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.PUT, "/jobboard/job/**").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.DELETE, "/jobboard/job/**").hasRole("EMPLOYER")
+
+                        // 🔐 All others require authentication
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
