@@ -1,5 +1,6 @@
 package jobboardapplication.endpoints;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jobboardapplication.domain.*;
 import jobboardapplication.repository.UserRepository;
 import jobboardapplication.service.api.JobService;
@@ -14,7 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Tag(name = "Job Management", description = "Operations related to job posting and searching")
 @RestController
 @RequestMapping("/jobboard/job")
 public class JobController {

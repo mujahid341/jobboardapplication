@@ -1,5 +1,6 @@
 package jobboardapplication.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jobboardapplication.domain.model.BaseEntity;
 
@@ -19,6 +20,7 @@ public class Job extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "created_by")
+    @JsonIgnore // ✅ Prevent Swagger & Jackson from serializing this
     private User createdBy;
 
     public Job() {

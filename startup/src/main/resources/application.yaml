@@ -1,16 +1,11 @@
 server:
   port: 8082
 
-logging:
-  level:
-    root: INFO
-    com.example.service: DEBUG
-
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/jobboarddb
     username: postgres           # replace if you use a different user
-    password: admin  # replace with your actual password
+    password: admin              # replace with your actual password
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -22,7 +17,9 @@ spring:
 jwt:
   secret: MySuperSecretKeyMustBe32BytesLong!
 
-
-
-
-
+logging:
+  level:
+    root: INFO
+    com.example.service: DEBUG
+    org.springdoc: DEBUG
+    org.springframework.web: DEBUG
