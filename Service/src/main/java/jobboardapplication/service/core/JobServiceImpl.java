@@ -14,7 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -99,9 +98,10 @@ public class JobServiceImpl implements JobService {
 
 
     @Override
-    public Page<JobResponse> search(String location, String skills, String keyword, int page, int size) {
+    public Page<JobResponse> search(String location, String skills, String title, int page, int size) {
         return jobRepository
-                .searchJobs(location, skills, keyword, PageRequest.of(page, size)).map(JobResponse::new);
+                .searchJobs(title, location, skills, PageRequest.of(page, size))
+                .map(JobResponse::new);
     }
 
     @Override
