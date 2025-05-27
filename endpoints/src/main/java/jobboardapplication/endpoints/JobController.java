@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @Tag(name = "Job Management", description = "Operations related to job posting and searching")
+@CrossOrigin(origins = "http://localhost:5173") // ✅ Add this
 @RestController
-@RequestMapping("/jobboard/job")
+@RequestMapping("/api/jobboard/job")
 public class JobController {
 
     @Autowired
@@ -54,12 +55,12 @@ public class JobController {
 
     @GetMapping("/search")
     public ResponseEntity<Page<JobResponse>> searchJobs(
+            @RequestParam(required = false) String title,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String skills,
-            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(jobService.search(location, skills, keyword, page, size));
+        return ResponseEntity.ok(jobService.search(location, skills, title, page, size));
     }
 
     @GetMapping("/{jobId}")

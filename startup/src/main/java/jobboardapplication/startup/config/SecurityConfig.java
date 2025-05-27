@@ -5,19 +5,23 @@ import jobboardapplication.service.core.CustomUserDetailService;
 import jobboardapplication.startup.security.JWTAuthenticationFilter;
 import jobboardapplication.repository.UserRepository;
 import jobboardapplication.startup.security.CustomAccessDeniedHandler;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.*;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.*;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -39,38 +43,45 @@ public class SecurityConfig {
                                                    JWTAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔓 Swagger/OpenAPI access for developers
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**"
-                        ).permitAll()
+                        // ✅ Allow Swagger / OpenAPI access without auth
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
 
-                        // 👤 Public Auth API
-                        .requestMatchers(HttpMethod.POST, "/jobboard/auth/**").permitAll()
+                        // ✅ Allow public POST requests for auth (login, register)
+                        .requestMatchers(HttpMethod.POST, "/api/jobboard/auth/**").permitAll()
 
-                        // 📄 Public Job Search API
-                        .requestMatchers(HttpMethod.GET, "/jobboard/job/**").permitAll()
+                        // ✅ Allow public GET requests for job search
+                        .requestMatchers(HttpMethod.GET, "/api/jobboard/job/**").permitAll()
 
-                        // 🧑‍💼 Employer-only APIs
-                        .requestMatchers(HttpMethod.GET, "/jobboard/job/my").hasRole("EMPLOYER")
-                        .requestMatchers(HttpMethod.POST, "/jobboard/job/**").hasRole("EMPLOYER")
-                        .requestMatchers(HttpMethod.PUT, "/jobboard/job/**").hasRole("EMPLOYER")
-                        .requestMatchers(HttpMethod.DELETE, "/jobboard/job/**").hasRole("EMPLOYER")
+                        // 🔐 Protect employer-only endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/jobboard/job/my").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.POST, "/api/jobboard/job/**").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.PUT, "/api/jobboard/job/**").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/jobboard/job/**").hasRole("EMPLOYER")
 
-                        // 🔐 All others require authentication
+                        // 🔐 Any other endpoint requires authentication
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
+                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     @Bean

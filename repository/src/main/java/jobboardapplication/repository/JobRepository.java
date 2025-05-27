@@ -16,36 +16,23 @@ public interface JobRepository extends JpaRepository<Job, String> {
 
     List<Job> findByCreatedBy(User user);
 
-   /* @Query("SELECT j FROM Job j WHERE " +
-            "(:location IS NULL OR LOWER(CAST(COALESCE(j.location, '') AS string)) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
-            "(:skills IS NULL OR LOWER(CAST(COALESCE(j.skill, '') AS string)) LIKE LOWER(CONCAT('%', :skills, '%'))) AND " +
-            "(:keyword IS NULL OR (LOWER(CAST(COALESCE(j.title, '') AS string)) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(CAST(COALESCE(j.description, '') AS string)) LIKE LOWER(CONCAT('%', :keyword, '%'))))")
-    Page<Job> searchJobs(@Param("location") String location,
-                         @Param("skills") String skills,
-                         @Param("keyword") String keyword,
-                         Pageable pageable);*/
-
     @Query(value = """
-    SELECT * FROM jobs j 
-    WHERE 
-      (:location IS NULL OR LOWER(CAST(j.location AS TEXT)) LIKE LOWER(CONCAT('%', :location, '%')))
-      AND (:skills IS NULL OR LOWER(CAST(j.skill AS TEXT)) LIKE LOWER(CONCAT('%', :skills, '%')))
-      AND (:keyword IS NULL OR (
-        LOWER(CAST(j.title AS TEXT)) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-        LOWER(CAST(j.description AS TEXT)) LIKE LOWER(CONCAT('%', :keyword, '%'))
-      ))
-    """,
+SELECT * FROM jobs j 
+WHERE 
+  (:title IS NULL OR LOWER(CAST(j.title AS TEXT)) LIKE LOWER(CONCAT('%', :title, '%')))
+  AND (:location IS NULL OR LOWER(CAST(j.location AS TEXT)) LIKE LOWER(CONCAT('%', :location, '%')))
+  AND (:skills IS NULL OR LOWER(CAST(j.skill AS TEXT)) LIKE LOWER(CONCAT('%', :skills, '%')))
+""",
             countQuery = "SELECT COUNT(*) FROM jobs j WHERE " +
-                    "(:location IS NULL OR LOWER(CAST(j.location AS TEXT)) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
-                    "(:skills IS NULL OR LOWER(CAST(j.skill AS TEXT)) LIKE LOWER(CONCAT('%', :skills, '%'))) AND " +
-                    "(:keyword IS NULL OR (LOWER(CAST(j.title AS TEXT)) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-                    "LOWER(CAST(j.description AS TEXT)) LIKE LOWER(CONCAT('%', :keyword, '%'))))",
+                    "(:title IS NULL OR LOWER(CAST(j.title AS TEXT)) LIKE LOWER(CONCAT('%', :title, '%'))) " +
+                    "AND (:location IS NULL OR LOWER(CAST(j.location AS TEXT)) LIKE LOWER(CONCAT('%', :location, '%'))) " +
+                    "AND (:skills IS NULL OR LOWER(CAST(j.skill AS TEXT)) LIKE LOWER(CONCAT('%', :skills, '%')))",
             nativeQuery = true)
-    Page<Job> searchJobs(@Param("location") String location,
-                         @Param("skills") String skills,
-                         @Param("keyword") String keyword,
-                         Pageable pageable);
+    Page<Job> searchJobs(
+            @Param("title") String title,
+            @Param("location") String location,
+            @Param("skills") String skills,
+            Pageable pageable);
 
     Page<Job> findAll(Specification<Job> spec, Pageable pageable);
 }

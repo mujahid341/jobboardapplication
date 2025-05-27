@@ -30,8 +30,8 @@ public class JobServiceImplTest {
 
     @Test
     public void testJobCreation() {
-        User employer = (new User("Test", "test@x.com", "pass", Role.EMPLOYER));
-        employer.setId(UUID.randomUUID().toString()); // ✅ manually set ID
+        User employer = new User("Test", "test@x.com", "pass", Role.EMPLOYER);
+        employer.setId(UUID.randomUUID().toString());
         userRepository.save(employer);
 
         Authentication mockAuth = Mockito.mock(Authentication.class);
