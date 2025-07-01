@@ -11,8 +11,9 @@ public interface JobService {
     List<JobResponse> listByEmployer(Authentication auth);
     JobResponse update(String jobId, UpdateJobRequest request, Authentication auth);
     JobResponse delete(String jobId, Authentication auth);
-   // List<JobResponse> search(String location, String skills, String keyword);
     JobResponse getById(String jobId);
     Page<JobResponse> search(String location, String skills, String keyword, int page, int size);
 
+    // ✅ New method for public job fetching (resume matcher etc.)
+    List<JobResponse> getAllJobsForMatcher();
 }
