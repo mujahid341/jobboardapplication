@@ -28,9 +28,6 @@ import java.util.List;
 public class SecurityConfig {
 
     @Autowired
-    private CustomUserDetailService customUserDetailsService;
-
-    @Autowired
     private CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
@@ -46,23 +43,16 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
-                        // ✅ Allow Swagger / OpenAPI access without auth
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
-
-                        // ✅ Allow public POST requests for auth (login, register)
+                        // Public endpoints
                         .requestMatchers(HttpMethod.POST, "/api/jobboard/auth/**").permitAll()
-
-                        // ✅ Allow public GET requests for job search
+                        .requestMatchers(HttpMethod.POST, "/resume/match/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/jobboard/job/**").permitAll()
 
-                        // 🔐 Protect employer-only endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/jobboard/job/my").hasRole("EMPLOYER")
+                        // EMPLOYER-only endpoints
                         .requestMatchers(HttpMethod.POST, "/api/jobboard/job/**").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.PUT, "/api/jobboard/job/**").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.DELETE, "/api/jobboard/job/**").hasRole("EMPLOYER")
 
-                        // 🔐 Any other endpoint requires authentication
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
@@ -74,9 +64,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:5173", "http://jobboard.life", "https://jobboard.life"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

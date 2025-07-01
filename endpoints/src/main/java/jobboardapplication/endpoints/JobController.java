@@ -1,22 +1,23 @@
 package jobboardapplication.endpoints;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jobboardapplication.domain.*;
+import jobboardapplication.domain.JobResponse;
+import jobboardapplication.domain.CreateJobRequest;
+import jobboardapplication.domain.UpdateJobRequest;
 import jobboardapplication.repository.UserRepository;
 import jobboardapplication.service.api.JobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @Tag(name = "Job Management", description = "Operations related to job posting and searching")
-@CrossOrigin(origins = "http://localhost:5173") // ✅ Add this
+@CrossOrigin(origins = "http://localhost:5173") // ✅ CORS for frontend
 @RestController
 @RequestMapping("/api/jobboard/job")
 public class JobController {
@@ -31,26 +32,22 @@ public class JobController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createJob(@RequestBody CreateJobRequest request, Authentication auth) {
-        JobResponse jobResponse = jobService.create(request, auth);
-        return ResponseEntity.status(HttpStatus.CREATED).body(jobResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(jobService.create(request, auth));
     }
 
     @GetMapping("/my")
     public ResponseEntity<Object> listMyJobs(Authentication auth) {
-        List<JobResponse> jobs = jobService.listByEmployer(auth);
-        return ResponseEntity.ok(jobs);
+        return ResponseEntity.ok(jobService.listByEmployer(auth));
     }
 
     @PutMapping("/{jobId}")
     public ResponseEntity<Object> updateJob(@PathVariable String jobId, @RequestBody UpdateJobRequest request, Authentication auth) {
-        JobResponse jobResponse = jobService.update(jobId, request, auth);
-        return ResponseEntity.ok(jobResponse);
+        return ResponseEntity.ok(jobService.update(jobId, request, auth));
     }
 
     @DeleteMapping("/{jobId}")
     public ResponseEntity<Object> deleteJob(@PathVariable String jobId, Authentication auth) {
-        JobResponse deletedJob = jobService.delete(jobId, auth);
-        return ResponseEntity.status(HttpStatus.CREATED).body(deletedJob);
+        return ResponseEntity.status(HttpStatus.CREATED).body(jobService.delete(jobId, auth));
     }
 
     @GetMapping("/search")
@@ -65,7 +62,12 @@ public class JobController {
 
     @GetMapping("/{jobId}")
     public ResponseEntity<Object> getJobById(@PathVariable String jobId) {
-        JobResponse job = jobService.getById(jobId);
-        return ResponseEntity.ok(job);
+        return ResponseEntity.ok(jobService.getById(jobId));
+    }
+
+    // ✅ New endpoint for resume matcher integration
+    @GetMapping("/all/public")
+    public ResponseEntity<List<JobResponse>> getAllJobsForMatcher() {
+        return ResponseEntity.ok(jobService.getAllJobsForMatcher());
     }
 }

@@ -9,9 +9,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.List;
+
 @Service
 public class CustomUserDetailService implements UserDetailsService {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -20,10 +22,16 @@ public class CustomUserDetailService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        String roleWithPrefix = "ROLE_" + user.getRole();  // Map EMPLOYER -> ROLE_EMPLOYER
+
+        List<SimpleGrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority(roleWithPrefix)
+        );
+
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
-                user.getPassword(), // BCrypt-hashed password
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                user.getPassword(),
+                authorities
         );
     }
 }
