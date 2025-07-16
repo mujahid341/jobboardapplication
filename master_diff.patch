@@ -1,0 +1,148 @@
+diff --git a/domain/pom.xml b/domain/pom.xml
+index 7d3e673..e0a879a 100644
+--- a/domain/pom.xml
++++ b/domain/pom.xml
+@@ -38,6 +38,10 @@
+             <artifactId>lombok</artifactId>
+             <scope>provided</scope>
+         </dependency>
++        <dependency>
++            <groupId>com.fasterxml.jackson.core</groupId>
++            <artifactId>jackson-annotations</artifactId>
++        </dependency>
+ 
+     </dependencies>
+ 
+diff --git a/domain/src/main/java/jobboardapplication/domain/Job.java b/domain/src/main/java/jobboardapplication/domain/Job.java
+index a6a25d0..d339a95 100644
+--- a/domain/src/main/java/jobboardapplication/domain/Job.java
++++ b/domain/src/main/java/jobboardapplication/domain/Job.java
+@@ -1,5 +1,6 @@
+ package jobboardapplication.domain;
+ 
++import com.fasterxml.jackson.annotation.JsonIgnore;
+ import jakarta.persistence.*;
+ import jobboardapplication.domain.model.BaseEntity;
+ 
+@@ -19,6 +20,7 @@ public class Job extends BaseEntity {
+ 
+     @ManyToOne
+     @JoinColumn(name = "created_by")
++    @JsonIgnore // ✅ Prevent Swagger & Jackson from serializing this
+     private User createdBy;
+ 
+     public Job() {
+diff --git a/endpoints/src/main/java/jobboardapplication/endpoints/JobController.java b/endpoints/src/main/java/jobboardapplication/endpoints/JobController.java
+index 1a86fc3..8596e86 100644
+--- a/endpoints/src/main/java/jobboardapplication/endpoints/JobController.java
++++ b/endpoints/src/main/java/jobboardapplication/endpoints/JobController.java
+@@ -1,5 +1,6 @@
+ package jobboardapplication.endpoints;
+ 
++import io.swagger.v3.oas.annotations.tags.Tag;
+ import jobboardapplication.domain.*;
+ import jobboardapplication.repository.UserRepository;
+ import jobboardapplication.service.api.JobService;
+@@ -14,7 +15,7 @@ import org.springframework.security.core.Authentication;
+ import org.springframework.web.bind.annotation.*;
+ 
+ import java.util.List;
+-
++@Tag(name = "Job Management", description = "Operations related to job posting and searching")
+ @RestController
+ @RequestMapping("/jobboard/job")
+ public class JobController {
+diff --git a/startup/src/main/java/jobboardapplication/startup/Application.java b/startup/src/main/java/jobboardapplication/startup/Application.java
+index 3db603c..3aa028b 100644
+--- a/startup/src/main/java/jobboardapplication/startup/Application.java
++++ b/startup/src/main/java/jobboardapplication/startup/Application.java
+@@ -7,11 +7,18 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
+ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+ 
+-@SpringBootApplication(scanBasePackages = "jobboardapplication")
++@SpringBootApplication(scanBasePackages = {
++        "jobboardapplication.startup",
++        "jobboardapplication.repository",
++        "jobboardapplication.domain",
++        "jobboardapplication.service",
++        "jobboardapplication.common",
++        "jobboardapplication.endpoints"  // ✅ ensures Swagger sees your controllers
++})
+ @EnableJpaRepositories(basePackages = "jobboardapplication.repository")
+ @EntityScan(basePackages = "jobboardapplication.domain")
+ @EnableConfigurationProperties
+-@EnableJpaAuditing // Required for @CreatedDate and @LastModifiedDate to work
++@EnableJpaAuditing
+ public class Application {
+     public static void main(String[] args) {
+         SpringApplication.run(Application.class, args);
+diff --git a/startup/src/main/java/jobboardapplication/startup/config/SecurityConfig.java b/startup/src/main/java/jobboardapplication/startup/config/SecurityConfig.java
+index 2a8237a..2026256 100644
+--- a/startup/src/main/java/jobboardapplication/startup/config/SecurityConfig.java
++++ b/startup/src/main/java/jobboardapplication/startup/config/SecurityConfig.java
+@@ -41,12 +41,28 @@ public class SecurityConfig {
+                 .csrf(AbstractHttpConfigurer::disable)
+                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                 .authorizeHttpRequests(auth -> auth
++
++                        // 🔓 Swagger/OpenAPI access for developers
++                        .requestMatchers(
++                                "/swagger-ui/**",
++                                "/v3/api-docs/**",
++                                "/swagger-resources/**",
++                                "/webjars/**"
++                        ).permitAll()
++
++                        // 👤 Public Auth API
+                         .requestMatchers(HttpMethod.POST, "/jobboard/auth/**").permitAll()
++
++                        // 📄 Public Job Search API
+                         .requestMatchers(HttpMethod.GET, "/jobboard/job/**").permitAll()
++
++                        // 🧑‍💼 Employer-only APIs
+                         .requestMatchers(HttpMethod.GET, "/jobboard/job/my").hasRole("EMPLOYER")
+                         .requestMatchers(HttpMethod.POST, "/jobboard/job/**").hasRole("EMPLOYER")
+                         .requestMatchers(HttpMethod.PUT, "/jobboard/job/**").hasRole("EMPLOYER")
+                         .requestMatchers(HttpMethod.DELETE, "/jobboard/job/**").hasRole("EMPLOYER")
++
++                        // 🔐 All others require authentication
+                         .anyRequest().authenticated()
+                 )
+                 .exceptionHandling(ex -> ex
+diff --git a/startup/src/main/resources/application.yaml b/startup/src/main/resources/application.yaml
+index 4e1cd67..cfe9002 100644
+--- a/startup/src/main/resources/application.yaml
++++ b/startup/src/main/resources/application.yaml
+@@ -1,16 +1,11 @@
+ server:
+   port: 8082
+ 
+-logging:
+-  level:
+-    root: INFO
+-    com.example.service: DEBUG
+-
+ spring:
+   datasource:
+     url: jdbc:postgresql://localhost:5432/jobboarddb
+     username: postgres           # replace if you use a different user
+-    password: admin  # replace with your actual password
++    password: admin              # replace with your actual password
+     driver-class-name: org.postgresql.Driver
+ 
+   jpa:
+@@ -22,7 +17,9 @@ spring:
+ jwt:
+   secret: MySuperSecretKeyMustBe32BytesLong!
+ 
+-
+-
+-
+-
++logging:
++  level:
++    root: INFO
++    com.example.service: DEBUG
++    org.springdoc: DEBUG
++    org.springframework.web: DEBUG
