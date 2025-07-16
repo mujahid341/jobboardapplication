@@ -2,7 +2,6 @@ services:
   - type: web
     name: jobboardapplication
     runtime: java
-    env: java
     plan: free
     branch: master
     buildCommand: ./mvnw clean package -pl startup -am
