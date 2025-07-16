@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: jobboardapplication
+    runtime: java
+    plan: free
+    branch: master
+    buildCommand: ./mvnw clean package -pl startup -am
+    startCommand: java -jar startup/target/startup-0.0.1-SNAPSHOT.jar
